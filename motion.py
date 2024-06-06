@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import Button, Entry, Label, Toplevel, Scale, HORIZONTAL, OptionMenu, messagebox
+from tkinter import Button, Label, Toplevel, Scale, HORIZONTAL, OptionMenu, messagebox
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import time
@@ -11,8 +11,8 @@ color_var = None
 color_line_var = None
 size_var = None
 button_press_time = 0
-cur_pos = (500, 500, 500)
-end_pos = (365, 450, 465)
+cur_pos = (0, 0, 0)
+end_pos = (35, 50, 65)
 is_paused = False
 is_running = False
 is_force_stopped = False
@@ -103,6 +103,7 @@ def visualize_movement():
     positions_z = [cur_pos[2]]
     is_running = True
     is_force_stopped = False
+    print(f"Movement start at {cur_pos}")
     while cur_pos != end_pos and is_running:
         
         if is_force_stopped:
@@ -112,19 +113,23 @@ def visualize_movement():
             time.sleep(0.1)
             continue
         
-        cur_pos = step_3d(cur_pos, end_pos)
+        temp_pos = step_3d(cur_pos, end_pos)
+        print(f"Step->  x: { temp_pos[0] - cur_pos[0]}, y: {temp_pos[1] - cur_pos[1]}, z: {temp_pos[2] - cur_pos[2]}")
+        cur_pos = temp_pos
         positions_x.append(cur_pos[0])
         positions_y.append(cur_pos[1])
         positions_z.append(cur_pos[2])
         # Clear the chart before drawing a new line
         ax.plot(positions_x, positions_y, positions_z, linestyle='-',color = color_var.get(), marker ='s', markersize = size_var.get(), markeredgecolor=color_line_var.get())
         # Set the current position
+        print(f"Position: {cur_pos}")
         coord_label.config(text=f"Position: {cur_pos}")
         canvas.draw()
         canvas.flush_events()
         # Refreshing the Tkinter window
         time.sleep(speed_var.get() / 1000.0)
-        
+    
+    print(f"Movement end")
     is_running = False  # Complete the visualization
     
     # Lock/Unlock the button after the animation is complete
@@ -226,7 +231,7 @@ def set_coordinates(x, y, z, window):
         if 0 <= x <= 500 and 0 <= y <= 500 and 0 <= z <= 500:
             end_pos = (x, y, z)
             coord_label2.config(text=f"End position: {end_pos}")
-            window.destroy()  # Close the window after selecting coordinates
+            window.destroy() 
         else:
             messagebox.showerror("Error", "The coordinates must be between 0 and 500.")
     except ValueError:
@@ -273,7 +278,7 @@ def zoom_zero(event):
         return
     else:
         current_time = time.time()
-        # Check if it's a double-click (within 0.5 seconds)
+        # Check if it's a double-click
         if current_time - button_press_time < 0.5:
             ax.set_xlim(0, 500)
             ax.set_ylim(0, 500)
